@@ -1,0 +1,151 @@
+local LocalPlayer = game:GetService("Players").LocalPlayer
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UIStroke = Instance.new("UIStroke")
+local FreezeButton = Instance.new("TextButton")
+local TitleLabel = Instance.new("TextLabel")
+local TextBox = Instance.new("TextBox")
+
+ScreenGui.Name = "TradeOfferGUI"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+MainFrame.Size = UDim2.new(0, 250, 0, 150)
+MainFrame.Position = UDim2.new(0.5, -125, 0.5, -75)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.BorderSizePixel = 5
+MainFrame.BackgroundTransparency = 0.5
+MainFrame.ClipsDescendants = true
+
+local BackgroundImage = Instance.new("ImageLabel")
+BackgroundImage.Parent = MainFrame
+BackgroundImage.Name = "BackgroundImage"
+BackgroundImage.Size = UDim2.new(1, 0, 1, 0)
+BackgroundImage.Position = UDim2.new(0, 0, 0, 0)
+BackgroundImage.Image = "rbxassetid://2913610235"
+BackgroundImage.BackgroundTransparency = 1
+BackgroundImage.ZIndex = -1
+
+local UICorner = Instance.new("UICorner", MainFrame)
+UICorner.CornerRadius = UDim.new(0, 0)
+
+UIStroke.Color = Color3.fromRGB(255, 255, 255)
+UIStroke.Thickness = 4
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Parent = MainFrame
+
+FreezeButton.Name = "FreezeButton"
+FreezeButton.Parent = MainFrame
+FreezeButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+FreezeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+FreezeButton.Font = Enum.Font.SourceSansItalic
+FreezeButton.TextSize = 20
+FreezeButton.Size = UDim2.new(0, 230, 0, 40)
+FreezeButton.Position = UDim2.new(0, 10, 0, 108)
+FreezeButton.Text = "Get a trade from player"
+
+TitleLabel.Name = "TitleLabel"
+TitleLabel.Parent = MainFrame
+TitleLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.Font = Enum.Font.SourceSansBold
+TitleLabel.TextSize = 20
+TitleLabel.Size = UDim2.new(0, 230, 0, 40)
+TitleLabel.Position = UDim2.new(0, 10, 0, 10)
+TitleLabel.Text = "RBLX SCRIPTS\n Force Trade Player"
+
+local UICorner = Instance.new("UICorner", TextBox)
+UICorner.CornerRadius = UDim.new(0, 30)
+TextBox.Parent = MainFrame
+TextBox.Size = UDim2.new(0, 250, 0, 50)
+TextBox.Position = UDim2.new(0.5, -125, 0.5, -25)
+TextBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+TextBox.TextSize = 20
+TextBox.Font = Enum.Font.SourceSansItalic
+TextBox.PlaceholderText = "Receive trade from"
+TextBox.Text = ""
+TextBox.ClearTextOnFocus = true
+TextBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local enteredText = TextBox.Text
+        local playerFound = false
+
+        if enteredText:lower() == game.Players.LocalPlayer.Name:lower() then
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Error",
+                Text = "You can't hook yourself!",
+                Duration = 5
+            })
+            return
+        end
+
+        for _, player in pairs(game.Players:GetPlayers()) do
+            if player.Name:lower() == enteredText:lower() then
+                playerFound = true
+                break
+            end
+        end
+
+        if playerFound then
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Forcing Trade",
+                Text = "Forcing player to trade: " .. enteredText,
+                Duration = 5
+            })
+
+            -- Send chat message to general chat
+            local chat = game:GetService("TextChatService")
+            local generalChannel = chat.TextChannels:FindFirstChild("RBXGeneral")
+            if generalChannel then
+                generalChannel:SendAsync(enteredText .. " (+forcetrade)")
+            end
+
+            -- Attaching script notification
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Attaching Script",
+                Text = "Hooking Script to: " .. enteredText,
+                Duration = 10
+            })
+
+            wait(10)
+
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Success",
+                Text = "Script Successfully Hooked to: " .. enteredText,
+                Duration = 5
+            })
+        else
+            game:GetService("StarterGui"):SetCore("SendNotification", {
+                Title = "Error",
+                Text = "Invalid Username: " .. enteredText,
+                Duration = 5
+            })
+        end
+    end
+end)
+
+local ButtonCorner = Instance.new("UICorner", FreezeButton)
+ButtonCorner.CornerRadius = UDim.new(0, 10)
+
+local function animateRGBBorder()
+    while true do
+        for i = 0, 255, 5 do
+            local color = Color3.fromRGB(i, 0, 255 - i)
+            UIStroke.Color = color
+            task.wait(0.05)
+        end
+        for i = 255, 0, -5 do
+            local color = Color3.fromRGB(i, 255 - i, 0)
+            UIStroke.Color = color
+            task.wait(0.05)
+        end
+    end
+end
+spawn(animateRGBBorder)
